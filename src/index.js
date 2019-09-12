@@ -28,3 +28,4 @@ export { default as Text } from "./components/Text";
 export { default as Title } from "./components/Title";
 export { default as Tags } from "./components/Tags";
 export { default as withResource } from "./components/Resources/withResource";
+export { default as Resource } from "./components/Resources/components/Resource";
