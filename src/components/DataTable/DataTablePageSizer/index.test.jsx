@@ -1,41 +1,35 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
-import DataTablePageSizer from '.';
+import { fireEvent, render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
+import DataTablePageSizer from './index';
 
 describe('<DataTablePageSizer />', () => {
-  const defaultWrapper = mount(
-    <DataTablePageSizer
-      pageSizeChange={() => () => true}
-      id="1234"
-    />,
-  );
-
-  const customWrapper = mount(
-    <DataTablePageSizer
-      pageSizeChange={() => () => true}
-      id="1234"
-      label="Foobar"
-      currentOption="150"
-      options={[
-        { label: '20', value: '20' },
-        { label: '50', value: '50' },
-        { label: '100', value: '100' },
-        { defaultChecked: true, label: '150', value: '150' },
-        { label: '200', value: '200' },
-        { label: '250', value: '250' },
-      ]}
-    />,
-  );
-
-  it('renders correct initial results', () => {
-    expect(defaultWrapper.find('.dc-page-size-options label').text()).toBe('Rows per page');
-    expect(defaultWrapper.find('.dc-page-size-options .page-size-select').props().value).toBe(20);
-    expect(defaultWrapper.find('option')).toHaveLength(3);
+  test('Loads default props', () => {
+    render(<DataTablePageSizer
+      pageSizeChange={() => ({})}
+      id="test-id"
+    />);
+    expect(screen.getByLabelText('Rows per page'));
+    expect(screen.getByDisplayValue('20'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '100' } });
+    expect(screen.getByDisplayValue('100'));
   });
 
-  it('renders correct custom results', () => {
-    expect(customWrapper.find('.dc-page-size-options label').text()).toBe('Foobar');
-    expect(customWrapper.find('.page-size-select').props().value).toBe('150');
-    expect(customWrapper.find('option')).toHaveLength(6);
+  test('Loads custom props', () => {
+    render(<DataTablePageSizer
+      label="Page Sizer"
+      pageSizeChange={() => ({})}
+      id="test-id"
+      initSize={75}
+      options={[
+        { label: '10', value: '10' },
+        { label: '25', value: '25' },
+        { label: '75', value: '75' },
+      ]}
+    />);
+    expect(screen.getByLabelText('Page Sizer'));
+    expect(screen.getByDisplayValue('75'));
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '10' } });
+    expect(screen.getByDisplayValue('10'));
   });
 });

@@ -1,29 +1,22 @@
 import React from 'react';
-import { shallow } from 'enzyme';
-import DataTablePageResults from '.';
+import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
+import DataTablePageResults from './index';
 
 describe('<DataTablePageResults />', () => {
-  const defaultWrapper = shallow(
-    <DataTablePageResults
+  test('Renders Data Table Results', () => {
+    render(<DataTablePageResults
       total={100}
       pageSize={10}
       currentPage={0}
-    />,
-  );
-
-  const customWrapper = shallow(
-    <DataTablePageResults
-      total={100}
-      pageSize={10}
-      currentPage={4}
-    />,
-  );
-
-  it('renders correct initial results', () => {
-    expect(defaultWrapper.find('p').text()).toBe('1 - 10 of 100 rows');
-  });
-
-  it('renders correct results on subsequent pages', () => {
-    expect(customWrapper.find('p').text()).toBe('41 - 50 of 100 rows');
+    />);
+    expect(screen.getByText((content, node) => {
+      const hasText = (n) => n.textContent === '1 - 10 of 100 rows';
+      const nodeHasText = hasText(node);
+      const childrenDontHaveText = Array.from(node.children).every(
+        (child) => !hasText(child),
+      );
+      return nodeHasText && childrenDontHaveText;
+    }));
   });
 });
