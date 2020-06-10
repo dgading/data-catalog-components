@@ -1,72 +1,37 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { DndProvider } from 'react-dnd';
 import Backend from 'react-dnd-html5-backend';
-import update from 'immutability-helper';
-import Card from './Card';
-
 import { ResourceDispatch } from '../../../services/resource/resource_defaults';
 import Modal from '../../Modal';
+import DefaultCard from './DefaultCard';
 
-const defaultCard = (card, index, moveCard) => (
-  <Card
-    key={card.id}
-    index={index}
-    id={card.id}
-    column={card}
-    moveCard={moveCard}
-  >
-    <label htmlFor={card.id}>
-      <input
-        id={card.id}
-        type="checkbox"
-        {...card.getToggleHiddenProps()}
-      />
-      {' '}
-      {card.Header}
-    </label>
-  </Card>
-);
+import { useSetColumnOrder, useMoveCard, useSetCards } from './hooks';
 
 const ManageColumns = ({
   renderCard,
+  nodeTarget,
+  modalOpenText,
+  modalTitle,
 }) => {
   const { reactTable } = useContext(ResourceDispatch);
+  const { allColumns } = reactTable;
   const [cards, setCards] = useState(null);
-  React.useEffect(() => {
-    if (reactTable.allColumns.length && cards === null) {
-      setCards(reactTable.allColumns);
-    }
-  }, [reactTable.allColumns]);
-  const moveCard = React.useCallback(
-    (dragIndex, hoverIndex) => {
-      const dragCard = reactTable.allColumns[dragIndex];
-
-      setCards(update(cards, {
-        $splice: [
-          [dragIndex, 1],
-          [hoverIndex, 0, dragCard],
-        ],
-      }));
-    },
-    [cards, reactTable.allColumns],
-  );
-  useEffect(() => {
-    if (cards) {
-      reactTable.setColumnOrder(cards.map((d) => d.id));
-    }
-  }, [cards]);
+  useSetColumnOrder(cards, reactTable);
+  useSetCards(cards, setCards, allColumns);
 
   return (
     <div>
       <Modal
-        title="Manage Columns"
-        nodeId="___gatsby"
-        openText="Manage Columns"
+        title={modalTitle}
+        nodeId={nodeTarget}
+        openText={modalOpenText}
       >
         <DndProvider backend={Backend}>
-          {reactTable.allColumns
-            && reactTable.allColumns.map((column, i) => renderCard(column, i, moveCard))}
+          {allColumns
+            && allColumns.map(
+              (column, i) => renderCard(column, i, useMoveCard(cards, setCards, reactTable)),
+            )}
         </DndProvider>
       </Modal>
     </div>
@@ -74,15 +39,17 @@ const ManageColumns = ({
 };
 
 ManageColumns.defaultProps = {
-  renderCard: defaultCard,
+  renderCard: DefaultCard,
+  nodeTarget: '__gatsby',
+  modalOpenText: 'Manage Columns',
+  modalTitle: 'Manage Columns',
 };
 
 ManageColumns.propTypes = {
   renderCard: PropTypes.func,
+  nodeTarget: PropTypes.string,
+  modalTitle: PropTypes.string,
+  modalOpenText: PropTypes.string,
 };
 
 export default ManageColumns;
-
-// Manage Columns - holds code
-// -- Modal is launched from Manage Columns with cards
-// -- -- Cards take children and Cards only adds the dnd feature

@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useDrag, useDrop } from 'react-dnd';
+
 const ItemTypes = {
   CARD: 'card',
 };
 const Card = ({
-  id, index, moveCard, children,
+  id, index, moveCard, children, useListItem,
 }) => {
   const ref = React.useRef(null);
   const [, drop] = useDrop({
@@ -45,6 +46,7 @@ const Card = ({
       // Generally it's better to avoid mutations,
       // but it's good here for the sake of performance
       // to avoid expensive index searches.
+      // eslint-disable-next-line no-param-reassign
       item.index = hoverIndex;
     },
   });
@@ -56,6 +58,14 @@ const Card = ({
   });
   const opacity = isDragging ? 0 : 1;
   drag(drop(ref));
+  if (useListItem) {
+    return (
+      <li key={id} ref={ref} style={{ opacity }}>
+        {children}
+      </li>
+    );
+  }
+
   return (
     <div key={id} ref={ref} style={{ opacity }}>
       {children}
@@ -63,11 +73,16 @@ const Card = ({
   );
 };
 
+Card.defaultProps = {
+  useListItem: false,
+};
+
 Card.propTypes = {
   id: PropTypes.string.isRequired,
   index: PropTypes.number.isRequired,
   children: PropTypes.node.isRequired,
   moveCard: PropTypes.func.isRequired,
+  useListItem: PropTypes.bool,
 };
 
 export default Card;
